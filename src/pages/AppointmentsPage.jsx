@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL } from '../services/apiBase';
 
 function AppointmentsPage() {
   const [appointments, setAppointments] = useState([]);

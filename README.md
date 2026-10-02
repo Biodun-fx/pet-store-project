@@ -41,3 +41,15 @@ The backend starts a temporary MongoDB instance automatically when `MONGODB_URI`
 ```bash
 npm run build
 ```
+
+## Deploy
+
+The repository includes a `render.yaml` blueprint for the Express API and `vercel.json` for React Router fallback routes.
+
+1. Create a MongoDB Atlas database and copy its connection URI.
+2. In Render, create a Blueprint from this GitHub repository. Set the private `MONGODB_URI` value when prompted; Render generates `JWT_SECRET` from the blueprint.
+3. After Render gives the backend a URL, deploy the repository on Vercel with the project root as the root directory, `npm run build` as the build command, and `dist` as the output directory.
+4. In Vercel project settings, set `VITE_API_URL` to the Render URL plus `/api`, for example `https://pet-haven-api.onrender.com/api`, then redeploy.
+5. In Render, set `CORS_ORIGIN` to the Vercel site URL, then redeploy the backend. For Vercel preview deployments, add their origins as comma-separated values if they need API access.
+
+Keep database URIs and any private environment values in the hosting provider's environment settings, never in GitHub.

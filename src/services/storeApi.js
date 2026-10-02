@@ -1,8 +1,8 @@
 import { petProducts } from '../data/petData.js';
 import { formatNaira } from '../utils/currency.js';
+import { API_BASE_URL } from './apiBase.js';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const API_BASE_URL = 'http://localhost:5000/api';
 
 export const normalizeApiProduct = (backendProduct, fallbackProduct) => {
   const localProduct = fallbackProduct ??

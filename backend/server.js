@@ -16,6 +16,10 @@ const Appointment = require('./models/Appointment');
 const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+const allowedOrigins = process.env.CORS_ORIGIN
+  ?.split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 const memoryStore = {
   users: [],
@@ -47,7 +51,7 @@ const getMemoryUser = (user) => ({
   createdAt: user.createdAt || new Date().toISOString()
 });
 
-app.use(cors());
+app.use(cors({ origin: allowedOrigins?.length ? allowedOrigins : true }));
 app.use(express.json());
 
 const products = [
