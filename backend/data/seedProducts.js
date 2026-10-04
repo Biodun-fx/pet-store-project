@@ -1,0 +1,22 @@
+module.exports = [
+  { productId: 1, category: 'Food', petType: 'Dog', name: 'Booster Dog Food - 415g', price: 24, rating: 4.9, tag: 'Best Seller', description: 'Premium dry dog food for all dog ages with balanced nutrition and rich flavor.' },
+  { productId: 2, category: 'Food', petType: 'Dog', name: 'Balance Dog Food - 410g', price: 28, rating: 4.8, tag: 'Popular', description: 'Complete and balanced dog food for all dog ages with protein-rich ingredients.' },
+  { productId: 3, category: 'Food', petType: 'Dog', name: 'Optimax Puppy Dog Food - 10kg', price: 32, rating: 4.7, tag: 'Puppy', description: 'Tailored puppy nutrition with essential growth nutrients and digestive support.' },
+  { productId: 4, category: 'Food', petType: 'Dog', name: 'Royal Canin Giant Starter Dog Food 3.5kg', price: 30, rating: 4.9, tag: 'Premium', description: 'Specially formulated large-breed puppy food designed for growth and immunity.' },
+  { productId: 5, category: 'Food', petType: 'Dog', name: 'Purina Dog Chow Food - Complete Adult Chicken', price: 26, rating: 4.8, tag: 'Adult', description: 'A complete adult dog food with chicken flavor for daily energy and healthy digestion.' },
+  { productId: 6, category: 'Food', petType: 'Dog', name: 'Hill’s Science Plan Adult Dog Food With Beef Can', price: 19, rating: 4.8, tag: 'Canned', description: 'Protein-rich beef canned dog food for a savory meal and balanced daily nutrition.' },
+  { productId: 7, category: 'Food', petType: 'Dog', name: 'Balance Complete & Balanced Dog Food - 12 Cans', price: 15, rating: 4.6, tag: 'Wet Food', description: 'Chunks in gravy dog food made for appetite stimulation and easy feeding.' },
+  { productId: 8, category: 'Food', petType: 'Dog', name: 'Booster Dog Food - 4kg', price: 22, rating: 4.8, tag: 'Dry Food', description: 'A larger, value-size dog food option with rich nutrition for everyday feeding.' },
+  { productId: 9, category: 'Toys', name: 'Plush Rope Chew Set', price: 18, rating: 4.9, tag: 'Playtime', description: 'Soft, durable rope toy set designed for chewing, tugging, and lively play sessions.' },
+  { productId: 10, category: 'Toys', name: 'Bouncy Ball Pack', price: 16, rating: 4.8, tag: 'Outdoor', description: 'Colorful chew-safe balls for energetic games and outdoor exercise.' },
+  { productId: 11, category: 'Toys', name: 'Snuggle Bone Plush', price: 21, rating: 4.9, tag: 'Comfort', description: 'A cuddly plush chew toy made for gentle play, comfort, and bedtime company.' },
+  { productId: 12, category: 'Accessories', name: 'Comfort Pet Carrier', price: 42, rating: 4.8, tag: 'Travel', description: 'Lightweight carrier with breathable mesh panels for secure, comfortable trips.' },
+  { productId: 13, category: 'Accessories', name: 'Pet Travel Bowl', price: 19, rating: 4.7, tag: 'On the go', description: 'Foldable travel bowl designed for hydration and snack breaks during walks and trips.' },
+  { productId: 14, category: 'Accessories', name: 'Luxury Pet Harness', price: 34, rating: 4.8, tag: 'Daily wear', description: 'Comfort-fit nylon harness that keeps walks easier, safer, and more enjoyable.' },
+  { productId: 15, category: 'Care', name: 'Gentle Grooming Kit', price: 27, rating: 4.7, tag: 'Wellness', description: 'A complete grooming kit for brushing, cleansing, and keeping coats soft and healthy.' },
+  { productId: 16, category: 'Care', name: 'Calming Paw Balm', price: 24, rating: 4.8, tag: 'Skin care', description: 'Moisturizing paw balm that supports soft pads and helps protect against dryness.' },
+  { productId: 17, category: 'Care', name: 'Coat Shine Serum', price: 29, rating: 4.9, tag: 'Natural care', description: 'Conditioning coat serum that adds shine, smoothness, and healthy-looking texture.' },
+  { productId: 18, category: 'Food', petType: 'Cat', name: 'Whiskas Chicken Cat Food', price: 23, rating: 4.8, tag: 'Cat food', description: 'Savory chicken recipe designed for daily growth, energy, and balanced feline nutrition.' },
+  { productId: 19, category: 'Food', petType: 'Cat', name: 'Royal Canin Cat Food Adult', price: 35, rating: 4.9, tag: 'Premium', description: 'Premium adult cat nutrition with digestible ingredients and a satisfying taste.' },
+  { productId: 20, category: 'Food', petType: 'Cat', name: 'Cat It Premium Tuna Mix', price: 26, rating: 4.8, tag: 'Tuna', description: 'High-quality tuna recipe with rich flavor and protein support for everyday feeding.' }
+].map((product) => ({ stock: 20, image: '', ...product }));

@@ -2,6 +2,20 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../services/apiBase';
 
+const fallbackProvider = {
+  id: 'pethaven-care-team',
+  name: 'Pet Haven Care Team',
+  specialty: 'Company care',
+  location: 'Lekki, Lagos, Nigeria',
+  rating: 4.9,
+  services: [
+    { name: 'General Consultation' },
+    { name: 'Vaccination' },
+    { name: 'Grooming' },
+    { name: 'Pet Care Advice' },
+  ],
+};
+
 function BookAppointmentPage() {
   const navigate = useNavigate();
   const [provider, setProvider] = useState(null);
@@ -30,7 +44,9 @@ function BookAppointmentPage() {
           }
         }
       } catch (error) {
-        setProvider(null);
+        setProvider(fallbackProvider);
+        setServices(fallbackProvider.services);
+        setForm((current) => ({ ...current, serviceName: fallbackProvider.services[0].name }));
       } finally {
         setLoading(false);
       }
@@ -77,7 +93,9 @@ function BookAppointmentPage() {
 
       navigate('/appointments');
     } catch (error) {
-      setMessage(error.message || 'Unable to book appointment');
+      setMessage(error.message === 'Failed to fetch'
+        ? 'The booking service is offline. Start the local backend and try again.'
+        : error.message || 'Unable to book appointment');
     } finally {
       setIsSubmitting(false);
     }

@@ -26,7 +26,12 @@ function AuthPage() {
     const savedUser = localStorage.getItem('pet-haven-user');
     const token = localStorage.getItem('pet-haven-token');
     if (savedUser && token) {
-      navigate('/profile');
+      try {
+        const user = JSON.parse(savedUser);
+        navigate(user.role === 'admin' ? '/admin' : '/profile', { replace: true });
+      } catch (error) {
+        localStorage.removeItem('pet-haven-user');
+      }
     }
   }, [navigate]);
 
@@ -63,7 +68,7 @@ function AuthPage() {
       localStorage.setItem('pet-haven-user', JSON.stringify(result.data.user));
       window.dispatchEvent(new Event('pet-haven-auth-changed'));
       setMessage(mode === 'login' ? 'Login successful.' : 'Registration successful.');
-      navigate('/profile');
+      navigate(result.data.user.role === 'admin' ? '/admin' : '/profile');
     } catch (error) {
       setMessage(error.message || 'Authentication failed.');
     } finally {

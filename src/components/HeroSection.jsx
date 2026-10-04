@@ -7,7 +7,7 @@ function HeroSection({ eyebrow, title, description, primaryAction, secondaryActi
         <div className="hero-copy">
           {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
           <h1>{title}</h1>
-          <p>{description}</p>
+          <p className="hero-subtitle">{description}</p>
 
           <div className="hero-actions">
             {primaryAction ? (

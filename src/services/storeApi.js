@@ -23,9 +23,9 @@ export const normalizeApiProduct = (backendProduct, fallbackProduct) => {
     description: backendProduct.description ?? localProduct.description ?? '',
     rating: Number(backendProduct.rating ?? localProduct.rating ?? 4.8),
     stock: Number(backendProduct.stock ?? localProduct.stock ?? 0),
-    image: localProduct.image ?? backendProduct.image ?? '',
-    petType: localProduct.petType ?? backendProduct.petType,
-    tag: localProduct.tag ?? backendProduct.tag ?? 'Shop',
+    image: backendProduct.image || localProduct.image || '',
+    petType: backendProduct.petType ?? localProduct.petType,
+    tag: backendProduct.tag || localProduct.tag || 'Shop',
   };
 };
 
@@ -39,7 +39,13 @@ export const fetchProducts = async (category = 'All') => {
       throw new Error('Failed to fetch products from the backend');
     }
 
-    const backendProducts = await response.json();
+    const result = await response.json();
+    const backendProducts = Array.isArray(result) ? result : result.data;
+
+    if (!Array.isArray(backendProducts)) {
+      throw new Error('The backend returned an invalid product list');
+    }
+
     const normalizedProducts = backendProducts.map((product) =>
       normalizeApiProduct(product, petProducts.find((localProduct) => Number(localProduct.id) === Number(product.id)))
     );

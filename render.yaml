@@ -10,9 +10,17 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 22
+      - key: NODE_ENV
+        value: production
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
         generateValue: true
+      - key: ADMIN_NAME
+        value: Pet Haven Admin
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
       - key: CORS_ORIGIN
         sync: false

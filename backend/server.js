@@ -10,12 +10,17 @@ const { body, validationResult } = require('express-validator');
 const connectDB = require('./config/db');
 const User = require('./models/User');
 const Order = require('./models/Order');
+const Product = require('./models/Product');
 const Provider = require('./models/Provider');
 const Appointment = require('./models/Appointment');
+const seedProductCatalog = require('./data/seedProducts');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET must be configured in production.');
+}
 const allowedOrigins = process.env.CORS_ORIGIN
   ?.split(',')
   .map((origin) => origin.trim())
@@ -25,7 +30,8 @@ const memoryStore = {
   users: [],
   providers: [],
   appointments: [],
-  orders: []
+  orders: [],
+  products: []
 };
 
 const isDatabaseConnected = () => mongoose.connection.readyState === 1;
@@ -54,33 +60,6 @@ const getMemoryUser = (user) => ({
 app.use(cors({ origin: allowedOrigins?.length ? allowedOrigins : true }));
 app.use(express.json());
 
-const products = [
-  {
-    id: 1,
-    name: 'Premium Dog Food',
-    category: 'Food',
-    price: 29.99,
-    stock: 20,
-    description: 'Balanced nutrition for active dogs.'
-  },
-  {
-    id: 2,
-    name: 'Cat Scratching Post',
-    category: 'Accessories',
-    price: 42.5,
-    stock: 12,
-    description: 'Sturdy scratching post with plush base.'
-  },
-  {
-    id: 3,
-    name: 'Pet Grooming Kit',
-    category: 'Care',
-    price: 18.75,
-    stock: 30,
-    description: 'Includes brush, comb, and shampoo tray.'
-  }
-];
-
 const sendSuccess = (res, statusCode, data, message) => {
   res.status(statusCode).json({ success: true, message, data });
 };
@@ -88,6 +67,12 @@ const sendSuccess = (res, statusCode, data, message) => {
 const sendError = (res, statusCode, message) => {
   res.status(statusCode).json({ success: false, message });
 };
+
+const serializeProduct = (product) => ({
+  ...product,
+  id: Number(product.productId ?? product.id),
+  _id: product._id ? product._id.toString() : undefined
+});
 
 const sanitizeUser = (user) => ({
   id: user._id ? user._id.toString() : user.id,
@@ -181,6 +166,30 @@ const appointmentRules = [
   body('appointmentTime').trim().notEmpty().withMessage('Appointment time is required.')
 ];
 
+const productRules = [
+  body('name').trim().isLength({ min: 2, max: 120 }).withMessage('Product name must be 2 to 120 characters.'),
+  body('category').isIn(['Food', 'Toys', 'Care', 'Accessories']).withMessage('Choose a valid product category.'),
+  body('petType').optional({ values: 'falsy' }).trim().isLength({ max: 40 }).withMessage('Pet type must be at most 40 characters.'),
+  body('price').isFloat({ min: 0 }).withMessage('Price must be zero or greater.'),
+  body('stock').isInt({ min: 0 }).withMessage('Stock must be a whole number of zero or greater.'),
+  body('rating').optional().isFloat({ min: 0, max: 5 }).withMessage('Rating must be between 0 and 5.'),
+  body('image').optional({ values: 'falsy' }).trim().isLength({ max: 2000 }).withMessage('Image URL must be at most 2000 characters.'),
+  body('tag').optional({ values: 'falsy' }).trim().isLength({ max: 50 }).withMessage('Tag must be at most 50 characters.'),
+  body('description').optional({ values: 'falsy' }).trim().isLength({ max: 1000 }).withMessage('Description must be at most 1000 characters.')
+];
+
+const getProductValues = (body) => ({
+  name: body.name,
+  category: body.category,
+  petType: body.petType || '',
+  price: Number(body.price),
+  stock: Number(body.stock),
+  rating: body.rating === undefined || body.rating === '' ? 4.8 : Number(body.rating),
+  image: body.image || '',
+  tag: body.tag || 'Shop',
+  description: body.description || ''
+});
+
 const seedAdmin = async () => {
   if (!isDatabaseConnected()) {
     return;
@@ -199,7 +208,13 @@ const seedAdmin = async () => {
   }
 
   const adminExists = await User.findOne({ email });
-  if (adminExists) return;
+  if (adminExists) {
+    adminExists.name = process.env.ADMIN_NAME?.trim() || adminExists.name;
+    adminExists.password = password;
+    adminExists.role = 'admin';
+    await adminExists.save();
+    return;
+  }
 
   await User.create({
     name: process.env.ADMIN_NAME?.trim() || 'Pet Haven Admin',
@@ -207,6 +222,25 @@ const seedAdmin = async () => {
     password,
     role: 'admin'
   });
+};
+
+const seedProducts = async () => {
+  if (isDatabaseConnected()) {
+    const productCount = await Product.countDocuments();
+    if (productCount === 0) {
+      await Product.insertMany(seedProductCatalog);
+      console.log(`Seeded ${seedProductCatalog.length} catalog products.`);
+    }
+    return;
+  }
+
+  if (memoryStore.products.length === 0) {
+    memoryStore.products = seedProductCatalog.map((product) => ({
+      ...product,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }));
+  }
 };
 
 const seedProviders = async () => {
@@ -249,18 +283,33 @@ app.get('/api/health', async (req, res) => {
   sendSuccess(res, 200, { status: 'ok', database: dbReady ? 'connected' : 'disconnected' }, 'Pet Store API is running');
 });
 
-app.get('/api/products', (req, res) => {
-  sendSuccess(res, 200, products, 'Products fetched successfully');
+app.get('/api/products', async (req, res) => {
+  try {
+    const catalog = isDatabaseConnected()
+      ? await Product.find({}).sort({ productId: 1 }).lean()
+      : [...memoryStore.products].sort((a, b) => a.productId - b.productId);
+    return sendSuccess(res, 200, catalog.map(serializeProduct), 'Products fetched successfully');
+  } catch (error) {
+    console.error('Products fetch error:', error);
+    return sendError(res, 500, 'Unable to fetch products');
+  }
 });
 
-app.get('/api/products/:id', (req, res) => {
-  const product = products.find((item) => item.id === Number(req.params.id));
+app.get('/api/products/:id', async (req, res) => {
+  try {
+    const productId = Number(req.params.id);
+    if (!Number.isInteger(productId) || productId < 1) return sendError(res, 404, 'Product not found');
 
-  if (!product) {
-    return sendError(res, 404, 'Product not found');
+    const product = isDatabaseConnected()
+      ? await Product.findOne({ productId }).lean()
+      : memoryStore.products.find((item) => item.productId === productId);
+
+    if (!product) return sendError(res, 404, 'Product not found');
+    return sendSuccess(res, 200, serializeProduct(product), 'Product fetched successfully');
+  } catch (error) {
+    console.error('Product fetch error:', error);
+    return sendError(res, 500, 'Unable to fetch product');
   }
-
-  return sendSuccess(res, 200, product, 'Product fetched successfully');
 });
 
 app.get('/api/company/booking', async (req, res) => {
@@ -434,6 +483,79 @@ app.post('/api/orders', orderRules, validateRequest, async (req, res) => {
   } catch (error) {
     console.error('Order error:', error);
     return sendError(res, 500, 'Unable to place order');
+  }
+});
+
+app.get('/api/admin/products', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const catalog = isDatabaseConnected()
+      ? await Product.find({}).sort({ productId: 1 }).lean()
+      : [...memoryStore.products].sort((a, b) => a.productId - b.productId);
+    return sendSuccess(res, 200, catalog.map(serializeProduct), 'Admin products fetched successfully');
+  } catch (error) {
+    console.error('Admin products fetch error:', error);
+    return sendError(res, 500, 'Unable to fetch products');
+  }
+});
+
+app.post('/api/admin/products', authMiddleware, adminMiddleware, productRules, validateRequest, async (req, res) => {
+  try {
+    const productId = isDatabaseConnected()
+      ? ((await Product.findOne({}).sort({ productId: -1 }).select('productId').lean())?.productId || 0) + 1
+      : (memoryStore.products.reduce((maxId, product) => Math.max(maxId, product.productId), 0) + 1);
+    const productData = { productId, ...getProductValues(req.body) };
+    const product = isDatabaseConnected()
+      ? await Product.create(productData)
+      : { ...productData, id: createMemoryId('product'), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+
+    if (!isDatabaseConnected()) memoryStore.products.push(product);
+    return sendSuccess(res, 201, serializeProduct(product.toObject ? product.toObject() : product), 'Product created successfully');
+  } catch (error) {
+    console.error('Admin product create error:', error);
+    return sendError(res, 500, 'Unable to create product');
+  }
+});
+
+app.put('/api/admin/products/:id', authMiddleware, adminMiddleware, productRules, validateRequest, async (req, res) => {
+  try {
+    const productId = Number(req.params.id);
+    if (!Number.isInteger(productId) || productId < 1) return sendError(res, 400, 'Invalid product ID');
+
+    const updates = getProductValues(req.body);
+    let product;
+    if (isDatabaseConnected()) {
+      product = await Product.findOneAndUpdate({ productId }, updates, { new: true, runValidators: true });
+    } else {
+      const index = memoryStore.products.findIndex((item) => item.productId === productId);
+      if (index !== -1) {
+        memoryStore.products[index] = { ...memoryStore.products[index], ...updates, updatedAt: new Date().toISOString() };
+        product = memoryStore.products[index];
+      }
+    }
+
+    if (!product) return sendError(res, 404, 'Product not found');
+    return sendSuccess(res, 200, serializeProduct(product.toObject ? product.toObject() : product), 'Product updated successfully');
+  } catch (error) {
+    console.error('Admin product update error:', error);
+    return sendError(res, 500, 'Unable to update product');
+  }
+});
+
+app.delete('/api/admin/products/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const productId = Number(req.params.id);
+    if (!Number.isInteger(productId) || productId < 1) return sendError(res, 400, 'Invalid product ID');
+
+    const product = isDatabaseConnected()
+      ? await Product.findOneAndDelete({ productId })
+      : memoryStore.products.find((item) => item.productId === productId);
+
+    if (!product) return sendError(res, 404, 'Product not found');
+    if (!isDatabaseConnected()) memoryStore.products = memoryStore.products.filter((item) => item.productId !== productId);
+    return sendSuccess(res, 200, { id: productId }, 'Product deleted successfully');
+  } catch (error) {
+    console.error('Admin product delete error:', error);
+    return sendError(res, 500, 'Unable to delete product');
   }
 });
 
@@ -747,8 +869,12 @@ app.use((err, req, res, next) => {
 connectDB()
   .then(async () => {
     if (isDatabaseConnected()) {
+      if (process.env.NODE_ENV === 'production' && (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD)) {
+        throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD must be configured in production.');
+      }
       await seedAdmin();
     }
+    await seedProducts();
     await seedProviders();
     app.listen(PORT, () => {
       console.log(`Pet Store API running on http://localhost:${PORT}`);

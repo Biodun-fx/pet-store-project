@@ -6,6 +6,10 @@ let memoryMongoServer;
 async function connectDB() {
   let mongoUri = process.env.MONGODB_URI;
 
+  if (!mongoUri && process.env.NODE_ENV === 'production') {
+    throw new Error('MONGODB_URI must be configured in production.');
+  }
+
   try {
     if (!mongoUri) {
       memoryMongoServer = await MongoMemoryServer.create();

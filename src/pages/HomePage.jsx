@@ -43,6 +43,7 @@ function HomePage() {
 
       <section className="section">
         <SectionTitle
+          className="home-why-heading"
           eyebrow="Why Pet Haven"
           title="Built for healthy routines and happier tails."
           subtitle="Thoughtful products, trusted ingredients, and convenience in one place."

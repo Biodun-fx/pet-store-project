@@ -361,6 +361,20 @@ body.light-theme .site-header {
   color: var(--text-soft);
 }
 
+.hero-copy .hero-subtitle {
+  max-width: 38rem;
+  margin: 1.1rem 0 0;
+  padding-left: 1rem;
+  border-left: 2px solid var(--primary);
+  color: var(--accent);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1.3rem, 2vw, 1.65rem);
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
 .hero-actions,
 .product-actions {
   display: flex;
@@ -461,6 +475,26 @@ body.light-theme .floating-badge {
   margin: 0;
   font-size: clamp(2rem, 3vw, 3rem);
   letter-spacing: -0.05em;
+}
+
+.home-why-heading {
+  flex-direction: column;
+  align-items: flex-start !important;
+  gap: 0.55rem;
+}
+
+.home-why-heading .text-muted {
+  max-width: 38rem;
+  margin: 0;
+  padding-left: 1rem;
+  border-left: 2px solid var(--primary);
+  color: var(--accent);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1.3rem, 2vw, 1.65rem);
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
 }
 
 .feature-grid,
@@ -1150,6 +1184,18 @@ body.light-theme .footer {
   background: var(--card);
   box-shadow: var(--shadow);
 }
+.section-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.section-heading-row h2 {
+  margin: 0;
+}
+.table-scroll {
+  overflow-x: auto;
+}
 
 .admin-table {
   width: 100%;
@@ -1164,12 +1210,117 @@ body.light-theme .footer {
   border-bottom: 1px solid var(--border);
 }
 
+.admin-products-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-products-heading {
+  align-items: center;
+}
+
+.admin-products-heading h2,
+.admin-product-form h3 {
+  margin: 0;
+}
+
+.admin-products-heading .eyebrow {
+  margin-bottom: 0.45rem;
+}
+
+.admin-products-heading p {
+  margin: 0.35rem 0 0;
+}
+
+.admin-product-form {
+  display: grid;
+  gap: 1rem;
+  padding: 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--bg-soft);
+}
+
+.admin-product-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.admin-product-fields label {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.admin-product-fields input,
+.admin-product-fields select,
+.admin-product-fields textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  background: var(--field-bg);
+  color: var(--navy);
+  font: inherit;
+}
+
+.admin-product-fields select option {
+  color: #172235;
+}
+
+.admin-product-image-field,
+.admin-product-description-field {
+  grid-column: span 3;
+}
+
+.admin-product-form-actions,
+.admin-product-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.admin-product-subline {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--text-soft);
+  font-size: 0.8rem;
+}
+
+.admin-delete-btn {
+  padding: 0.6rem 0.85rem;
+  border: 1px solid rgba(255, 110, 110, 0.35);
+  border-radius: 999px;
+  background: rgba(255, 110, 110, 0.08);
+  color: #ff9b9b;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-product-message {
+  margin: 0;
+  color: var(--accent);
+}
+
 .provider-filter-panel {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
   margin: 2rem 0;
 }
+  .admin-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-metrics {
+    grid-template-columns: 1fr;
+  }
 
 .provider-filter-panel input,
 .provider-filter-panel select,
@@ -1631,6 +1782,15 @@ body.light-theme .profile-form input[type='date'] {
 }
 
 @media (max-width: 900px) {
+  .admin-product-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-product-image-field,
+  .admin-product-description-field {
+    grid-column: span 2;
+  }
+
   .hero-inner,
   .contact-grid,
   .feature-grid,
@@ -1662,6 +1822,15 @@ body.light-theme .profile-form input[type='date'] {
 }
 
 @media (max-width: 560px) {
+  .admin-product-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-product-image-field,
+  .admin-product-description-field {
+    grid-column: auto;
+  }
+
   .product-grid {
     grid-template-columns: 1fr;
   }
