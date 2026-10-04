@@ -62,6 +62,7 @@ function HomePage() {
 
       <section className="section">
         <SectionTitle
+          className="home-bestseller-heading"
           eyebrow="Bestsellers"
           title="Our top customer picks."
           subtitle="A few favorites for everyday pet care."

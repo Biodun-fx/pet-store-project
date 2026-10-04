@@ -29,18 +29,35 @@ const formatDate = (value) => {
   return Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat('en-NG', { dateStyle: 'medium' }).format(date);
 };
 
+const readApiResponse = async (response) => {
+  const responseText = await response.text();
+  let result;
+
+  try {
+    result = responseText ? JSON.parse(responseText) : {};
+  } catch (error) {
+    const message = response.status === 404
+      ? 'The deployed backend is missing this admin API route. Redeploy the latest backend commit on Render.'
+      : `The backend returned an unexpected response (HTTP ${response.status}). Check the Render deployment.`;
+    const apiError = new Error(message);
+    apiError.status = response.status;
+    throw apiError;
+  }
+
+  if (!response.ok || result.success === false) {
+    const apiError = new Error(result.message || `Backend request failed (HTTP ${response.status}).`);
+    apiError.status = response.status;
+    throw apiError;
+  }
+
+  return result;
+};
+
 const fetchAdminData = async (path, token) => {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  const result = await response.json();
-
-  if (!response.ok || result.success === false) {
-    const error = new Error(result.message || 'Unable to load admin data.');
-    error.status = response.status;
-    throw error;
-  }
-
+  const result = await readApiResponse(response);
   return result.data;
 };
 
@@ -155,11 +172,7 @@ function AdminDashboardPage() {
         },
         body: JSON.stringify(payload),
       });
-      const result = await response.json();
-
-      if (!response.ok || result.success === false) {
-        throw new Error(result.message || 'Unable to save product.');
-      }
+      const result = await readApiResponse(response);
 
       const savedProduct = result.data;
       setProducts((current) => editingProductId === null
@@ -186,8 +199,7 @@ function AdminDashboardPage() {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
-      const result = await response.json();
-      if (!response.ok || result.success === false) throw new Error(result.message || 'Unable to delete product.');
+      await readApiResponse(response);
       setProducts((current) => current.filter((item) => item.id !== product.id));
       setProductMessage('Product deleted from the store.');
     } catch (error) {
